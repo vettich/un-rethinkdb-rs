@@ -1,0 +1,13 @@
+[package]
+name = "unreql_macros"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+quote = "1.0.35"
+syn = { version = "1.0.109", default-features = false, features = ["parsing", "proc-macro", "derive", "printing"] }
+proc-macro2 = "1.0.75"
+convert_case = "0.6.0"
+
+[lib]
+proc-macro = true
