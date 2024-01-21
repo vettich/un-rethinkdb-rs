@@ -35,8 +35,8 @@ enum ArgValue {
 impl ArgValue {
     fn ty(&self) -> PathSegment {
         match self {
-            Self::Type(ty) => ty.to_owned(),
-            Self::NameWithType { ty, .. } => ty.to_owned(),
+            Self::Type(ty) => ty.clone(),
+            Self::NameWithType { ty, .. } => ty.clone(),
         }
     }
 
