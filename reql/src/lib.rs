@@ -1,3 +1,55 @@
+//! # Unofficial RethinkDB Driver for Rust
+//!
+//! Well documented and easy to use
+//!
+//! ## Import
+//!
+//! ```
+//! use unreql::r;
+//! ```
+//!
+//! ## Connect
+//!
+//! ```
+//! use unreql::{r, cmd::connect::Options};
+//!
+//! # async fn example() -> unreql::Result<()> {
+//! let conn = r.connect(Options::new().db("marvel")).await?;
+//! # Ok(()) }
+//! ```
+//!
+//! ## Get data
+//!
+//! ```
+//! use unreql::r;
+//! use futures::TryStreamExt;
+//!
+//! # #[derive(serde::Deserialize)]
+//! # struct User;
+//! # async fn example() -> unreql::Result<()> {
+//! # let conn = r.connect(()).await?;
+//! let mut query = r.table("users").get(1).run(&conn);
+//! let user: Option<User> = query.try_next().await?;
+//! # Ok(()) }
+//! ```
+//!
+//! ## Update data
+//!
+//! ```
+//! use unreql::{r, rjson};
+//!
+//! # async fn example() -> unreql::Result<()> {
+//! # let conn = r.connect(()).await?;
+//! r.table("users")
+//!     .get(1)
+//!     .update(rjson!({
+//!         "name": "Jonh",
+//!         "upd_count": r.row().g("upd_count").add(1),
+//!     }))
+//!     .run::<_, serde_json::Value>(&conn);
+//! # Ok(()) }
+//! ```
+
 pub mod cmd;
 mod err;
 mod proto;

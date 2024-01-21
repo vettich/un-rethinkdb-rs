@@ -4,8 +4,6 @@ use unreql::{func, r};
 
 #[tokio::test]
 async fn index_create() -> unreql::Result<()> {
-    tracing_subscriber::fmt::init();
-
     let conn = r.connect(()).await?;
 
     let _ = r
