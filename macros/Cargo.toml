@@ -7,7 +7,6 @@ authors = ["Vetti <vetti.ch@mail.ru>"]
 license = "MIT"
 keywords = []
 repository = "https://github.com/vettich/un-rethinkdb-rs.git"
-readme = "README.md"
 
 [dependencies]
 quote = "1.0.35"

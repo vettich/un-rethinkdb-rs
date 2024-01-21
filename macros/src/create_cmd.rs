@@ -8,13 +8,12 @@ use syn::{
     Ident, PathSegment, Token,
 };
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub(super) struct CreateCommand {
     docs: Vec<TokenTree>,
     variants: Vec<Variant>,
 }
 
-#[derive(Debug)]
 struct Variant {
     flags: Flags,
     name: Ident,
@@ -22,13 +21,12 @@ struct Variant {
     args: Vec<ArgValue>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 struct Flags {
     for_command: bool,
     for_root: bool,
 }
 
-#[derive(Debug)]
 enum ArgValue {
     NameWithType { name: Ident, ty: PathSegment },
     Type(PathSegment),
