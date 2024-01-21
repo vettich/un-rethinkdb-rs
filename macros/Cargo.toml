@@ -1,7 +1,13 @@
 [package]
 name = "unreql_macros"
+description = "Macros for unreql"
 version = "0.1.0"
 edition = "2021"
+authors = ["Vetti <vetti.ch@mail.ru>"]
+license = "MIT"
+keywords = []
+repository = "https://github.com/vettich/un-rethinkdb-rs.git"
+readme = "README.md"
 
 [dependencies]
 quote = "1.0.35"
