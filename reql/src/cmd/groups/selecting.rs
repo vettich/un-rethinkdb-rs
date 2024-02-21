@@ -110,6 +110,7 @@ create_cmd!(
     /// - [get_all](Self::get_all)
     /// - [between](Self::between)
     /// - [filter](Self::filter)
+    only_command,
     get(key: Serialize)
 );
 
@@ -167,8 +168,8 @@ create_cmd!(
     /// - [get](Self::get)
     /// - [between](Self::between)
     /// - [filter](Self::filter)
-    get_all,
-    ManyArgs<Index>
+    only_command,
+    get_all(args: ManyArgs<Index>)
 );
 
 create_cmd!(
@@ -238,8 +239,7 @@ create_cmd!(
     /// ```
     /// # use unreql::cmd::options::{BetweenOptions, Status};
     /// # unreql::example(|r, conn| {
-    /// let opts = BetweenOptions::new().index("code_name".into());
-    /// r.table("dc").between("dark_knight", "man_of_steel", opts).run(conn)
+    /// r.table("dc").between("dark_knight", "man_of_steel", r.index("code_name")).run(conn)
     /// # })
     /// ```
     ///
@@ -249,8 +249,7 @@ create_cmd!(
     /// ```
     /// # use unreql::cmd::options::{BetweenOptions, Status};
     /// # unreql::example(|r, conn| {
-    /// let opts = BetweenOptions::new().index("full_name".into());
-    /// r.table("users").between(["Smith", "John"], ["Welles", "Wade"], opts).run(conn)
+    /// r.table("users").between(["Smith", "John"], ["Welles", "Wade"], r.index("full_name")).run(conn)
     /// # })
     /// ```
     ///
@@ -274,8 +273,7 @@ create_cmd!(
     /// ```
     /// # use unreql::cmd::options::{BetweenOptions, Status};
     /// # unreql::example(|r, conn| {
-    /// let opts = BetweenOptions::new().index("rank".into());
-    /// r.table("teams").between(1, 11, opts).changes(()).run(conn)
+    /// r.table("teams").between(1, 11, r.index("rank")).changes(()).run(conn)
     /// # })
     /// ```
     ///
@@ -294,6 +292,7 @@ create_cmd!(
     /// - [get](Self::get)
     /// - [get_all](Self::get_all)
     /// - [filter](Self::filter)
+    only_command,
     between(lower_key: Serialize, upper_key: Serialize, opt: Opt<BetweenOptions>)
 );
 

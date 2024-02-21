@@ -1,4 +1,4 @@
-use crate::Command;
+use crate::{cmd::options::Index, Command};
 
 use super::{ArgsWithOpt, WithOpts};
 
@@ -6,10 +6,7 @@ pub trait Opt<P> {
     fn with_cmd(self, cmd: Command) -> Command;
 }
 
-impl<P> Opt<P> for P
-where
-    P: WithOpts,
-{
+impl<P> Opt<P> for Index {
     fn with_cmd(self, cmd: Command) -> Command {
         self.with_opts(cmd)
     }

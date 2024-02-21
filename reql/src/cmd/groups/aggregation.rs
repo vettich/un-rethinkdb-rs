@@ -232,10 +232,9 @@ create_cmd!(
     ///
     /// ```
     /// # use unreql::func;
-    /// # use unreql::cmd::options::GroupOptions;
     /// # unreql::example(|r, conn| {
     /// r.table("games")
-    ///   .group(r.with_opt((), GroupOptions::new().index("type".into())))
+    ///   .group(r.index("type"))
     ///   .max("points")
     ///   .g("points")
     ///   .run(conn)

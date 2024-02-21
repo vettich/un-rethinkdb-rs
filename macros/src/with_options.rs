@@ -13,6 +13,12 @@ pub(super) fn parse(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
                 cmd.with_opts(self)
             }
         }
+
+        impl #generics crate::cmd::args::Opt<#name> for #name #generics {
+            fn with_cmd(self, cmd: crate::Command) -> crate::Command {
+                cmd.with_opts(self)
+            }
+        }
     };
 
     options.into()

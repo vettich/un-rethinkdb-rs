@@ -265,7 +265,7 @@ where
     }
 }
 
-impl ManyArgs<Index> for Index {
+impl<P> ManyArgs<P> for Index {
     fn with_cmd(self, cmd: Command) -> Command {
         self.with_opts(cmd)
     }
