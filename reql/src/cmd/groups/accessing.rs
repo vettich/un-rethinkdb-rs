@@ -1,4 +1,5 @@
 use futures::stream::Stream;
+use ql2::term::TermType;
 use serde::de::DeserializeOwned;
 
 use crate::{
@@ -157,6 +158,8 @@ impl Command {
     /// # Related commands
     /// - [table](Self::table)
     pub fn changes(self, opt: impl Opt<ChangesOptions>) -> Command {
-        opt.with_cmd(self).mark_change_feed()
+        opt.with_cmd(Command::new(TermType::Changes))
+            .mark_change_feed()
+            .with_parent(self)
     }
 }

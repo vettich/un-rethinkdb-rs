@@ -104,16 +104,6 @@ pub enum Command {
     },
 }
 
-// /// The query that will be sent to RethinkDB
-// #[derive(Debug, Clone)]
-// pub struct Command {
-//     typ: TermType,
-//     datum: Option<super::Result<Datum>>,
-//     args: VecDeque<Command>,
-//     opts: Option<super::Result<Datum>>,
-//     change_feed: bool,
-// }
-
 impl Command {
     #[doc(hidden)]
     pub fn new(typ: TermType) -> Self {
