@@ -20,16 +20,45 @@
 //!
 //! ## Get data
 //!
-//! ```
-//! use unreql::r;
-//! use futures::TryStreamExt;
+//! Get by ID
 //!
+//! ```
+//! # use unreql::r;
 //! # #[derive(serde::Deserialize)]
 //! # struct User;
 //! # async fn example() -> unreql::Result<()> {
 //! # let conn = r.connect(()).await?;
-//! let mut query = r.table("users").get(1).run(&conn);
-//! let user: Option<User> = query.try_next().await?;
+//! let user: User = r.table("users").get(1).exec(&conn).await?;
+//! # Ok(()) }
+//! ```
+//!
+//! Get all data
+//!
+//! ```
+//! # use unreql::r;
+//! # #[derive(serde::Deserialize)]
+//! # struct User;
+//! # async fn example() -> unreql::Result<()> {
+//! # let conn = r.connect(()).await?;
+//! let users: Vec<User> = r.table("users").exec_to_vec(&conn).await?;
+//! # Ok(()) }
+//! ```
+//!
+//! or
+//!
+//! ```
+//! # use unreql::r;
+//! use futures::TryStreamExt;
+//!
+//! # #[derive(Debug, serde::Deserialize)]
+//! # struct User;
+//! # async fn example() -> unreql::Result<()> {
+//! # let conn = r.connect(()).await?;
+//! let mut cur = r.table("users").run::<_, User>(&conn);
+//! while let Ok(Some(user)) = cur.try_next().await {
+//!   // do something with user
+//!   dbg!(user);
+//! }
 //! # Ok(()) }
 //! ```
 //!

@@ -20,7 +20,7 @@ or
 
 ```toml
 [dependencies]
-unreql = "0.1.3"
+unreql = "0.1.4"
 ```
 
 ## Import
@@ -37,9 +37,26 @@ let conn = r.connect(()).await?;
 
 ## Get data
 
+Get by ID
+
 ```rust
-let query = r.table("users").get(1).run(&conn);
-let user: Option<User> = query.try_next().await?;
+let user: User = r.table("users").get(1).exec(&conn).await?;
+```
+
+Get all data
+
+```rust
+let users: Vec<User> = r.table("users").exec_to_vec(&conn).await?;
+```
+
+or
+
+```rust
+let mut cur = r.table("users").run(&conn);
+let mut users: Vec<User> = vec![];
+while let Ok(Some(user)) = cur.try_next().await? {
+    users.push(user);
+}
 ```
 
 ## Update data
