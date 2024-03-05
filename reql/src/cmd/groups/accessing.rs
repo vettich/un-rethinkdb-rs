@@ -1,4 +1,4 @@
-use futures::stream::Stream;
+use futures::{stream::Stream, TryStreamExt};
 use ql2::term::TermType;
 use serde::de::DeserializeOwned;
 
@@ -8,12 +8,109 @@ use crate::{
 };
 
 impl Command {
+    /// Run a query on a connection.
+    ///
+    /// # Related commands
+    /// - [exec](Self::exec)
+    /// - [exec_to_vec](Self::exec_to_vec)
     pub fn run<A, T>(self, arg: A) -> impl Stream<Item = crate::Result<T>>
     where
         A: run::Arg,
         T: Unpin + DeserializeOwned,
     {
         Box::pin(run::new(self, arg))
+    }
+
+    /// Run a query on a connection and return one result.
+    ///
+    /// ## Example
+    /// Return one result from table.
+    ///
+    /// ```
+    /// # use unreql::{r, Session};
+    /// # use serde_json::Value;
+    /// # async fn example(conn: &mut Session) -> unreql::Result<()> {
+    /// let doc: Value = r.table("test")
+    ///   .get("id")
+    ///   .exec(conn)
+    ///   .await?;
+    ///   # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// You can also call `run` instead of `exec`:
+    ///
+    /// ```
+    /// # use unreql::{r, Session};
+    /// # use serde_json::Value;
+    /// # use futures::TryStreamExt;
+    /// # async fn example(conn: &mut Session) -> unreql::Result<()> {
+    /// let doc = r.table("test")
+    ///   .get("id")
+    ///   .run::<_, Value>(conn)
+    ///   .try_next()
+    ///   .await?;
+    ///   # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Related commands
+    /// - [run](Self::run)
+    /// - [exec_to_vec](Self::exec_to_vec)
+    pub async fn exec<A, T>(self, arg: A) -> crate::Result<T>
+    where
+        A: run::Arg,
+        T: Unpin + DeserializeOwned,
+    {
+        match self.run(arg).try_next().await? {
+            Some(result) => Ok(result),
+            None => Err(crate::Driver::NotFound.into()),
+        }
+    }
+
+    /// Run a query on a connection and collect all the results as `Vec`.
+    ///
+    /// ## Example
+    /// Collect all results from table.
+    ///
+    /// ```
+    /// # use unreql::{r, Session};
+    /// # use serde_json::Value;
+    /// # async fn example(conn: &mut Session) -> unreql::Result<()> {
+    /// let docs: Vec<Value> = r.table("test").exec_to_vec(conn).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// You can also call `run` instead of `exec_to_vec`:
+    ///
+    /// ```
+    /// # use unreql::{r, Session};
+    /// # use serde_json::Value;
+    /// # use futures::TryStreamExt;
+    /// # async fn example(conn: &mut Session) {
+    /// let mut cur = r.table("test").run::<_, Value>(conn);
+    /// let mut docs = vec![];
+    /// while let Ok(Some(doc)) = cur.try_next().await {
+    ///   docs.push(doc);
+    /// }
+    /// # }
+    /// ```
+    ///
+    /// # Related commands
+    /// - [run](Self::run)
+    /// - [exec](Self::exec)
+    pub async fn exec_to_vec<A, T>(self, arg: A) -> crate::Result<Vec<T>>
+    where
+        A: run::Arg,
+        T: Unpin + DeserializeOwned,
+    {
+        let mut results = vec![];
+        let mut cur = self.run(arg);
+        while let Some(doc) = cur.try_next().await? {
+            results.push(doc);
+        }
+        Ok(results)
     }
 
     /// Turn a query into a changefeed, an infinite stream of objects

@@ -21,6 +21,15 @@ impl fmt::Display for Error {
     }
 }
 
+impl Error {
+    pub fn is_not_found(&self) -> bool {
+        match self {
+            Self::Driver(Driver::NotFound) => true,
+            _ => false,
+        }
+    }
+}
+
 /// The parent class of all runtime errors
 ///
 /// All errors on the server unrelated to compilation. Programs may use this to catch any runtime
@@ -96,6 +105,7 @@ pub enum Driver {
     Io(io::ErrorKind, String),
     Json(Arc<serde_json::Error>),
     Other(String),
+    NotFound,
 }
 
 impl From<Driver> for Error {
@@ -116,6 +126,7 @@ impl fmt::Display for Driver {
             Self::Io(_, error) => write!(f, "{}", error),
             Self::Json(error) => write!(f, "{}", error),
             Self::Other(msg) => write!(f, "{}", msg),
+            Self::NotFound => write!(f, "not found"),
         }
     }
 }
