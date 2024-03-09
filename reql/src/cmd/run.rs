@@ -159,9 +159,13 @@ where
                     // If response is array then will try to flat it
                     // [[1, 2, 3]] => [1, 2, 3]
                     let atom_val = if let Value::Array(arr) = resp.r {
-                        match &arr[0] {
-                            Value::Array(inner_arr) => Value::Array(inner_arr.clone()),
-                            _ => Value::Array(arr),
+                        if arr.is_empty() {
+                            Value::Array(arr)
+                        } else {
+                            match &arr[0] {
+                                Value::Array(inner_arr) => Value::Array(inner_arr.clone()),
+                                _ => Value::Array(arr),
+                            }
                         }
                     } else {
                         resp.r
