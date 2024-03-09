@@ -20,7 +20,7 @@ or
 
 ```toml
 [dependencies]
-unreql = "0.1.4"
+unreql = "0.1.5"
 ```
 
 ## Import
