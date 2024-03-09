@@ -226,7 +226,7 @@ impl Command {
         }
     }
 
-    fn typ(&self) -> TermType {
+    pub(crate) fn typ(&self) -> TermType {
         match self {
             Self::Boxed(cmd) => cmd.typ(),
             Self::Data { typ, .. } => *typ,
@@ -399,7 +399,7 @@ impl Serialize for Db {
         S: Serializer,
     {
         let Self(name) = self;
-        let cmd = r.db(name.as_ref());
+        let cmd = r.db(name.clone());
         cmd.serialize(serializer)
     }
 }

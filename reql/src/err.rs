@@ -23,10 +23,7 @@ impl fmt::Display for Error {
 
 impl Error {
     pub fn is_not_found(&self) -> bool {
-        match self {
-            Self::Driver(Driver::NotFound) => true,
-            _ => false,
-        }
+        matches!(self, Self::Driver(Driver::NotFound))
     }
 }
 

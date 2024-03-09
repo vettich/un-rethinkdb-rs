@@ -1,11 +1,13 @@
 use crate::Command;
 
 mod arg;
+mod do_args;
 mod many;
 mod one_two_opt;
 mod opt;
 
 pub use arg::Arg;
+pub use do_args::DoArgs;
 pub use many::ManyArgs;
 pub use one_two_opt::OneAndSecondOptionalArg;
 pub use opt::Opt;

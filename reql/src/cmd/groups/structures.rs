@@ -4,7 +4,7 @@ use unreql_macros::create_cmd;
 
 use crate::{
     cmd::{
-        args::{Arg, ManyArgs},
+        args::{Arg, DoArgs, ManyArgs},
         options::{HttpOptions, JsOptions},
     },
     Command,
@@ -109,8 +109,10 @@ create_cmd!(
     ///
     /// # Related commands
     /// - [map](Self::map)
-    do_:Funcall,
-    ManyArgs<()>
+    only_root,
+    do_(args: DoArgs) { args.build(None) }
+    only_command,
+    do_(args: DoArgs) { args.build(Some(self)) }
 );
 
 create_cmd!(

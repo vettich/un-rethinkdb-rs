@@ -2,9 +2,9 @@ use convert_case::{Case, Casing};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};
 use syn::{
-    parenthesized,
+    braced, parenthesized,
     parse::{Parse, ParseStream},
-    token::Paren,
+    token::{Brace, Paren},
     Ident, PathSegment, Token,
 };
 
@@ -19,6 +19,7 @@ struct Variant {
     name: Ident,
     term_type: Ident,
     args: Vec<ArgValue>,
+    body: Option<TokenStream>,
 }
 
 #[derive(Default)]
@@ -55,11 +56,13 @@ impl Parse for CreateCommand {
             let (name, flags) = parse_name_and_flags(input)?;
             let term_type = parse_term_type(input, &name)?;
             let args = parse_args(input)?;
+            let body = parse_body(input)?;
             variants.push(Variant {
                 flags,
                 name,
                 term_type,
                 args,
+                body,
             });
         }
 
@@ -178,6 +181,17 @@ fn parse_args(input: ParseStream) -> syn::Result<Vec<ArgValue>> {
     Ok(types)
 }
 
+fn parse_body(input: ParseStream) -> syn::Result<Option<TokenStream>> {
+    if !input.peek(Brace) {
+        return Ok(None);
+    }
+
+    let content;
+    braced!(content in input);
+
+    Ok(Some(content.parse()?))
+}
+
 fn gen_arg_name(i: usize, arg: &ArgValue) -> Ident {
     match arg {
         ArgValue::NameWithType { name, .. } => name.clone(),
@@ -198,6 +212,7 @@ fn build_variant(docs: &[TokenTree], variant: Variant) -> Vec<TokenStream> {
         name,
         term_type,
         args,
+        body,
     } = variant;
 
     let mut args_decl: Vec<TokenStream> = args
@@ -206,7 +221,11 @@ fn build_variant(docs: &[TokenTree], variant: Variant) -> Vec<TokenStream> {
         .map(|(i, arg)| {
             let arg_name = gen_arg_name(i, arg);
             let arg_type = arg.ty();
-            quote! { #arg_name: impl #arg_type }
+            if arg.is_serialize() {
+                quote! { #arg_name: impl Serialize + 'static }
+            } else {
+                quote! { #arg_name: impl #arg_type }
+            }
         })
         .collect();
     let mut all_args = vec![quote! { self }];
@@ -218,7 +237,7 @@ fn build_variant(docs: &[TokenTree], variant: Variant) -> Vec<TokenStream> {
         .map(|(i, arg)| {
             let arg_name = gen_arg_name(i, arg);
             if arg.is_serialize() {
-                quote! { let cmd = cmd.with_arg(Command::from_json(#arg_name)); }
+                quote! { let cmd = cmd.with_arg(Command::from_json_2(#arg_name)); }
             } else {
                 quote! { let cmd = #arg_name.with_cmd(cmd); }
             }
@@ -228,30 +247,40 @@ fn build_variant(docs: &[TokenTree], variant: Variant) -> Vec<TokenStream> {
     let mut gen = vec![];
 
     if flags.for_root {
+        let body = body.clone().unwrap_or_else(|| {
+            quote! {
+                let cmd = Command::new(TermType::#term_type);
+                #(#cmd_body)*
+                cmd
+            }
+        });
         gen.push(quote! {
             impl crate::r {
                 #[allow(clippy::should_implement_trait)]
                 #[allow(clippy::too_many_arguments)]
                 #(#docs)*
                 pub fn #name(#(#all_args),*) -> Command {
-                    let cmd = Command::new(TermType::#term_type);
-                    #(#cmd_body)*
-                    cmd
+                    #body
                 }
             }
         });
     }
 
     if flags.for_command {
+        let body = body.unwrap_or_else(|| {
+            quote! {
+                let cmd = Command::new(TermType::#term_type);
+                #(#cmd_body)*
+                cmd.with_parent(self)
+            }
+        });
         gen.push(quote! {
             impl crate::Command {
                 #[allow(clippy::should_implement_trait)]
                 #[allow(clippy::too_many_arguments)]
                 #(#docs)*
                 pub fn #name(#(#all_args),*) -> Command {
-                    let cmd = Command::new(TermType::#term_type);
-                    #(#cmd_body)*
-                    cmd.with_parent(self)
+                    #body
                 }
             }
         });

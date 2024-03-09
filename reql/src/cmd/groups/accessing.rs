@@ -105,12 +105,7 @@ impl Command {
         A: run::Arg,
         T: Unpin + DeserializeOwned,
     {
-        let mut results = vec![];
-        let mut cur = self.run(arg);
-        while let Some(doc) = cur.try_next().await? {
-            results.push(doc);
-        }
-        Ok(results)
+        self.run(arg).try_collect().await
     }
 
     /// Turn a query into a changefeed, an infinite stream of objects
