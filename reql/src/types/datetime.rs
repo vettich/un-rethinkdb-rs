@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-use time::{format_description, OffsetDateTime, UtcOffset};
+use time::{error::ComponentRange, format_description, OffsetDateTime, UtcOffset};
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct DateTime(OffsetDateTime);
@@ -15,6 +15,38 @@ impl From<OffsetDateTime> for DateTime {
 impl From<DateTime> for OffsetDateTime {
     fn from(DateTime(dt): DateTime) -> Self {
         dt
+    }
+}
+
+impl DateTime {
+    pub fn now() -> Self {
+        OffsetDateTime::now_utc().into()
+    }
+
+    pub fn from_ymd<M>(y: i32, m: M, d: u8) -> Result<Self, ComponentRange>
+    where
+        M: ConvertToMonth,
+    {
+        let m = m.convert()?;
+        let dt = time::Date::from_calendar_date(y, m, d)?;
+        let tm = time::Time::from_hms(0, 0, 0).unwrap();
+        Ok(OffsetDateTime::new_utc(dt, tm).into())
+    }
+}
+
+pub trait ConvertToMonth: Sized {
+    fn convert(self) -> Result<time::Month, time::error::ComponentRange>;
+}
+
+impl ConvertToMonth for time::Month {
+    fn convert(self) -> Result<time::Month, time::error::ComponentRange> {
+        Ok(self)
+    }
+}
+
+impl ConvertToMonth for u8 {
+    fn convert(self) -> Result<time::Month, time::error::ComponentRange> {
+        self.try_into()
     }
 }
 

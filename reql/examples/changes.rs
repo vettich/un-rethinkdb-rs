@@ -1,6 +1,5 @@
 use futures::TryStreamExt;
-use serde_json::Value;
-use unreql::{cmd::options::ChangesOptions, r};
+use unreql::{cmd::options::ChangesOptions, r, types::Change};
 
 use crate::shared::connect_opts;
 
@@ -13,7 +12,7 @@ async fn main() {
     let opts = ChangesOptions::new()
         .include_initial(true)
         .include_states(true);
-    let mut q = r.table("test").changes(opts).run::<_, Value>(&sess);
+    let mut q = r.table("test").changes(opts).run::<_, Change>(&sess);
 
     while let Ok(Some(changed)) = q.try_next().await {
         dbg!(changed);

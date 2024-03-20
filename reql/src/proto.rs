@@ -8,10 +8,6 @@ use std::any::{Any, TypeId};
 use std::collections::{HashMap, VecDeque};
 use std::{fmt, str};
 
-mod datetime;
-
-pub use datetime::DateTime;
-
 #[derive(Debug, Clone)]
 pub enum Datum {
     Null,

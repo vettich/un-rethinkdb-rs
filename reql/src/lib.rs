@@ -83,6 +83,7 @@ pub mod cmd;
 mod err;
 mod proto;
 mod tools;
+pub mod types;
 
 #[macro_use]
 mod rjson_macros;
@@ -107,7 +108,8 @@ use tracing::trace;
 
 pub use cmd::func::Func;
 pub use err::*;
-pub use proto::{Command, DateTime, Datum};
+pub use proto::{Command, Datum};
+pub use types::DateTime;
 pub use unreql_macros::func;
 
 #[doc(hidden)]
