@@ -6,9 +6,9 @@ use serde_json::Value;
 pub use datetime::DateTime;
 
 #[derive(Debug, Deserialize)]
-pub struct Change<O = Value, N = Value> {
-    pub old_val: Option<O>,
-    pub new_val: Option<N>,
+pub struct Change<OldVal = Value, NewVal = OldVal> {
+    pub old_val: Option<OldVal>,
+    pub new_val: Option<NewVal>,
     pub result_type: Option<String>,
     pub old_offset: Option<usize>,
     pub new_offset: Option<usize>,
@@ -16,7 +16,7 @@ pub struct Change<O = Value, N = Value> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct WriteStatus<T = Value, U = Value> {
+pub struct WriteStatus<OldVal = Value, NewVal = OldVal> {
     pub inserted: u32,
     pub replaced: u32,
     pub unchanged: u32,
@@ -26,5 +26,5 @@ pub struct WriteStatus<T = Value, U = Value> {
     pub first_error: Option<String>,
     pub generated_keys: Option<Vec<uuid::Uuid>>,
     pub warnings: Option<Vec<String>>,
-    pub changes: Option<Vec<Change<T, U>>>,
+    pub changes: Option<Vec<Change<OldVal, NewVal>>>,
 }

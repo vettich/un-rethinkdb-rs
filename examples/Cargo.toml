@@ -1,0 +1,21 @@
+[package]
+name = "unreql_examples"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+unreql = { path = "../reql" }
+unreql_deadpool = { path = "../deadpool" }
+
+deadpool = "0.10.0"
+tokio = { version = "1.20.1", features = ["macros", "rt-multi-thread"] }
+futures = "0.3.21"
+
+[[example]]
+name = "changes"
+path = "0-unreql/changes.rs"
+
+[[example]]
+name = "deadpool"
+path = "1-deadpool/deadpool.rs"
+

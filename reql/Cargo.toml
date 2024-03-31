@@ -11,14 +11,13 @@ keywords = ["async", "database", "rethinkdb", "reql", "driver"]
 categories = ["database"]
 readme = "README.md"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 unreql_macros = { version = "0.1.1", path = "../macros" }
 
 futures = "0.3.21"
 async-net = "1.6.1"
 async-stream = "0.3.3"
+async-trait = "0.1.79"
 scram = "0.6.0"
 time = { version = "0.3.9", features = ["macros", "formatting", "parsing"] }
 

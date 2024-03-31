@@ -1,9 +1,7 @@
 use futures::TryStreamExt;
 use unreql::{cmd::options::ChangesOptions, r, types::Change};
 
-use crate::shared::connect_opts;
-
-mod shared;
+use unreql_examples::connect_opts;
 
 #[tokio::main]
 async fn main() {

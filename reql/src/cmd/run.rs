@@ -3,6 +3,7 @@ use crate::cmd::options::{Durability, ReadMode};
 use crate::proto::{Command, Payload};
 use crate::{err, Connection, Result, Session};
 use async_stream::try_stream;
+use async_trait::async_trait;
 use futures::io::{AsyncReadExt, AsyncWriteExt};
 use futures::stream::{Stream, StreamExt};
 use ql2::query::QueryType;
@@ -91,51 +92,49 @@ impl Options {
     }
 }
 
+#[async_trait]
 pub trait Arg {
-    fn into_run_opts(self) -> Result<(Connection, Options)>;
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, Options)>;
 }
 
+#[async_trait]
 impl Arg for &Session {
-    fn into_run_opts(self) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
         let conn = self.connection()?;
         Ok((conn, Default::default()))
     }
 }
 
+#[async_trait]
 impl Arg for Connection {
-    fn into_run_opts(self) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
         Ok((self, Default::default()))
     }
 }
 
+#[async_trait]
 impl Arg for Args<(&Session, Options)> {
-    fn into_run_opts(self) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
         let Args((session, options)) = self;
         let conn = session.connection()?;
         Ok((conn, options))
     }
 }
 
+#[async_trait]
 impl Arg for Args<(Connection, Options)> {
-    fn into_run_opts(self) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
         let Args(arg) = self;
         Ok(arg)
     }
 }
 
+#[async_trait]
 impl Arg for &mut Session {
-    fn into_run_opts(self) -> Result<(Connection, Options)> {
-        self.connection()?.into_run_opts()
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, Options)> {
+        self.connection()?.into_run_opts(for_changes).await
     }
 }
-
-// impl Arg for Args<(&mut Session, Options)> {
-//     fn into_run_opts(self) -> Result<(Connection, Options)> {
-//         let Args((session, options)) = self;
-//         let conn = session.connection()?;
-//         r.args((conn, options)).into_run_opts()
-//     }
-// }
 
 pub(crate) fn new<A, T>(query: Command, arg: A) -> impl Stream<Item = Result<T>>
 where
@@ -143,7 +142,7 @@ where
     T: Unpin + DeserializeOwned,
 {
     try_stream! {
-        let (mut conn, mut opts) = arg.into_run_opts()?;
+        let (mut conn, mut opts) = arg.into_run_opts(query.change_feed()).await?;
         opts = opts.default_db(&conn.session).await;
         let change_feed = query.change_feed();
         if change_feed {
