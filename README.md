@@ -72,3 +72,23 @@ r.table("users")
   }))
   .run(&conn);
 ```
+
+## Use connection pool
+
+Implemented session manager for async `deadpool`
+
+```rust
+use unreql::{r, cmd::connect};
+use unreql_deadpool::{IntoPoolWrapper, SessionManager};
+use deadpool::managed::Pool;
+
+// config to connect to rethinkdb
+let config = connect::Options::default();
+// new session manager
+let manager = SessionManager::new(config);
+// create a pool that is wrapped for ease of use (to be able to be passed to `.run(&pool)`)
+let pool = Pool::builder(manager).max_size(20).build().unwrap().wrapper();
+
+// now you can to pass `pool` to `.run()` and `.exec()`
+let user: User = r.table("users").get(1).exec(&pool).await?;
+```

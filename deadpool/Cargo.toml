@@ -7,3 +7,6 @@ edition = "2021"
 unreql = { path = "../reql" }
 deadpool = "0.10.0"
 async-trait = "0.1.79"
+
+[dev-dependencies]
+serde = { version = "1.0.192", features = ["derive"] }

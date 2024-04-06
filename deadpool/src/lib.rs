@@ -1,3 +1,24 @@
+//! # Deadpool for UnReQL
+//!
+//! This crate implements a [`deadpool`](https://crates.io/crates/deadpool)
+//! manager for [`unreql`](https://crates.io/crates/unreql).
+//!
+//! ## Example
+//!
+//! ```rust
+//! use unreql::{r, cmd::connect};
+//! use unreql_deadpool::{IntoPoolWrapper, SessionManager};
+//! use deadpool::managed::Pool;
+//!
+//! # async fn example() -> unreql::Result<()> {
+//! let cfg = connect::Options::default();
+//! let manager = SessionManager::new(cfg);
+//! let pool = Pool::builder(manager).max_size(20).build().unwrap().wrapper();
+//! # #[derive(serde::Deserialize)] struct User;
+//! let user: User = r.table("users").get("id").exec(&pool).await?;
+//! # Ok(()) }
+//! ```
+
 use std::ops::Deref;
 
 use async_trait::async_trait;
@@ -84,6 +105,12 @@ pub trait IntoPoolWrapper {
 
 impl IntoPoolWrapper for Pool<SessionManager> {
     fn wrapper(self) -> PoolWrapper {
-        PoolWrapper(self)
+        self.into()
+    }
+}
+
+impl From<Pool<SessionManager>> for PoolWrapper {
+    fn from(pool: Pool<SessionManager>) -> Self {
+        Self(pool)
     }
 }
