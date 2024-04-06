@@ -7,11 +7,11 @@ edition = "2021"
 unreql = { path = "../reql" }
 unreql_deadpool = { path = "../deadpool" }
 
-deadpool = "0.10.0"
-tokio = { version = "1.20.1", features = ["macros", "rt-multi-thread"] }
-futures = "0.3.21"
-serde = { version = "1.0.192", features = ["derive"] }
-serde_json = "1.0.108"
+deadpool = "0.10"
+tokio = { version = "1.20", features = ["macros", "rt-multi-thread"] }
+futures = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [[example]]
 name = "changes"
