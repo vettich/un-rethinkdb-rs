@@ -1,7 +1,15 @@
 [package]
 name = "unreql_deadpool"
+description = "Deadpool for UnReQL"
 version = "0.1.0"
 edition = "2021"
+authors = ["Vetti <vetti.ch@mail.ru>"]
+license = "MIT"
+documentation = "https://docs.rs/unreql_deadpool"
+repository = "https://github.com/vettich/un-rethinkdb-rs.git"
+keywords = ["async", "rethinkdb", "reql", "unreql", "deadpool"]
+categories = ["database"]
+readme = "README.md"
 
 [dependencies]
 unreql = { version = "0.1.7", path = "../reql" }
