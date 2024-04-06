@@ -1,7 +1,7 @@
 [package]
 name = "unreql"
 description = "Well documented and easy to use RethinkDB Rust Driver"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 authors = ["Vetti <vetti.ch@mail.ru>"]
 license = "MIT"
