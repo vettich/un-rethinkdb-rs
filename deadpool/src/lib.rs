@@ -99,6 +99,29 @@ impl run::Arg for &PoolWrapper {
     }
 }
 
+#[async_trait]
+impl run::Arg for PoolWrapper {
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, run::Options), Error> {
+        if for_changes {
+            // for `changes` create a separate new connection to DB
+            let sess = self.manager().new_session().await?;
+            sess.into_run_opts(for_changes).await
+        } else {
+            // otherwise the available connection is used
+            let sess = match self.get().await {
+                Ok(v) => v,
+                Err(err) => {
+                    return match err {
+                        PoolError::Backend(err) => Err(err),
+                        _ => Err(Error::Driver(unreql::Driver::Other(err.to_string()))),
+                    }
+                }
+            };
+            sess.into_run_opts(for_changes).await
+        }
+    }
+}
+
 pub trait IntoPoolWrapper {
     fn wrapper(self) -> PoolWrapper;
 }
