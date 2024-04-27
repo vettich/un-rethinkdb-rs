@@ -118,6 +118,7 @@ impl Command {
         Self::new(TermType::Var).with_arg(index)
     }
 
+    #[doc(hidden)]
     pub fn with_parent(mut self, parent: Command) -> Self {
         self.set_change_feed(self.change_feed() || parent.change_feed());
         self.mut_args().push_front(parent);
@@ -134,13 +135,29 @@ impl Command {
         self
     }
 
+    #[doc(hidden)]
     pub fn with_opts<T>(mut self, opts: T) -> Self
     where
-        T: Serialize,
+        T: Serialize + 'static,
     {
-        let opts = serde_json::to_value(&opts)
-            .map(Into::into)
-            .map_err(Into::into);
+        // retrieve Datum from Command if possible
+        let opts = match Self::from_json_2(opts) {
+            Self::Data {
+                typ: TermType::Datum,
+                datum: Some(datum),
+                ..
+            } => datum,
+            Self::Boxed(cmd) => match *cmd {
+                Self::Data {
+                    typ: TermType::Datum,
+                    datum: Some(datum),
+                    ..
+                } => datum,
+                cmd => Ok(Datum::Command(Box::new(cmd))),
+            },
+            cmd => Ok(Datum::Command(Box::new(cmd))),
+        };
+
         self.set_opts(opts);
         self
     }
@@ -332,12 +349,12 @@ impl Serialize for Command {
                 _ => {
                     let typ = *typ as i32;
                     match &opts {
-                        Some(Ok(map)) => (typ, &args, map).serialize(serializer),
+                        Some(Ok(map)) => (typ, args, map).serialize(serializer),
                         None => {
                             if args.is_empty() {
                                 [typ].serialize(serializer)
                             } else {
-                                (typ, &args).serialize(serializer)
+                                (typ, args).serialize(serializer)
                             }
                         }
                         Some(Err(error)) => Err(ser::Error::custom(error)),

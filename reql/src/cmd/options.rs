@@ -8,6 +8,7 @@ use crate::Command;
 
 use super::args;
 
+#[derive(Debug)]
 pub struct Index(pub(crate) Command);
 
 impl args::WithOpts for Index {

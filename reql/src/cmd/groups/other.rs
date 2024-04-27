@@ -17,10 +17,10 @@ create_cmd!(
 );
 
 impl r {
-    pub fn index(self, arg: impl Serialize) -> Index {
-        let obj = Command::from_json(rjson!({
-            "index": Command::from_json(arg),
-        }));
+    pub fn index(self, arg: impl Serialize + 'static) -> Index {
+        let obj = rjson!({
+            "index": arg
+        });
         Index(obj)
     }
 }
