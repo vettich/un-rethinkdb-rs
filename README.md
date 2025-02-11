@@ -81,6 +81,7 @@ Implemented session manager for async `deadpool`
 [dependencies]
 unreql = "0.2"
 unreql_deadpool = "0.2"
+deadpool = "0.12"
 ```
 
 ```rust
