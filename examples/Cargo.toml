@@ -22,6 +22,10 @@ name = "merge"
 path = "0-unreql/merge.rs"
 
 [[example]]
+name = "merge_if_null"
+path = "0-unreql/merge_if_null.rs"
+
+[[example]]
 name = "deadpool"
 path = "1-deadpool/deadpool.rs"
 
