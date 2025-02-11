@@ -32,5 +32,5 @@ async fn main() {
         rx.recv().await.unwrap();
     }
 
-    println!("cost: {:?}", now.elapsed());
+    println!("cost of making {MAX} calls: {:?}", now.elapsed());
 }

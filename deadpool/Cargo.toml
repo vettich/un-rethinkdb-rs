@@ -1,7 +1,7 @@
 [package]
 name = "unreql_deadpool"
 description = "Deadpool for UnReQL"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 authors = ["Vetti <vetti.ch@mail.ru>"]
 license = "MIT"
@@ -12,8 +12,8 @@ categories = ["database"]
 readme = "README.md"
 
 [dependencies]
-unreql = { version = "0.1.7", path = "../reql" }
-deadpool = "0.10"
+unreql = { version = "0.2.0", path = "../reql" }
+deadpool = "0.12"
 async-trait = "0.1"
 
 [dev-dependencies]

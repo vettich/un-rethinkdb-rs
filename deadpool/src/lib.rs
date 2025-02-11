@@ -46,7 +46,6 @@ impl SessionManager {
     }
 }
 
-#[async_trait]
 impl managed::Manager for SessionManager {
     type Type = Session;
     type Error = Error;
