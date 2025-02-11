@@ -1,6 +1,6 @@
 # Unofficial RethinkDB Driver for Rust
 
-Well documented and easy to use 
+Well documented and easy to use
 
 [<img alt="github" src="https://img.shields.io/badge/github-vettich/un--rethinkdb--rs-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/vettich/un-rethinkdb-rs)
 [<img alt="crates.io" src="https://img.shields.io/crates/v/unreql.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/unreql)
@@ -20,7 +20,7 @@ or
 
 ```toml
 [dependencies]
-unreql = "0.1.8"
+unreql = "0.2"
 ```
 
 ## Import
@@ -76,6 +76,12 @@ r.table("users")
 ## Use connection pool
 
 Implemented session manager for async `deadpool`
+
+```toml
+[dependencies]
+unreql = "0.2"
+unreql_deadpool = "0.2"
+```
 
 ```rust
 use unreql::{r, cmd::connect};
