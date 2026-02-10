@@ -25,7 +25,7 @@ use async_trait::async_trait;
 use deadpool::managed::{self, Pool, PoolError};
 
 use unreql::{
-    cmd::{connect, run},
+    cmd::{connect, options::RunOptions, run},
     r, Connection, Error, Session,
 };
 
@@ -77,7 +77,7 @@ impl Deref for PoolWrapper {
 
 #[async_trait]
 impl run::Arg for &PoolWrapper {
-    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, run::Options), Error> {
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, RunOptions), Error> {
         if for_changes {
             // for `changes` create a separate new connection to DB
             let sess = self.manager().new_session().await?;
@@ -100,7 +100,7 @@ impl run::Arg for &PoolWrapper {
 
 #[async_trait]
 impl run::Arg for PoolWrapper {
-    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, run::Options), Error> {
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, RunOptions), Error> {
         if for_changes {
             // for `changes` create a separate new connection to DB
             let sess = self.manager().new_session().await?;

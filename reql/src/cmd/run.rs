@@ -1,5 +1,5 @@
 use super::args::Args;
-use crate::cmd::options::{Durability, ReadMode};
+use crate::cmd::options::{Db, RunOptions};
 use crate::proto::{Command, Payload};
 use crate::{err, Connection, Result, Session};
 use async_stream::try_stream;
@@ -9,13 +9,11 @@ use futures::stream::{Stream, StreamExt};
 use ql2::query::QueryType;
 use ql2::response::{ErrorType, ResponseType};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::Value;
-use std::borrow::Cow;
 use std::str;
 use std::sync::atomic::Ordering;
 use tracing::trace;
-use unreql_macros::OptionsBuilder;
 
 const DATA_SIZE: usize = 4;
 const TOKEN_SIZE: usize = 8;
@@ -45,61 +43,14 @@ impl Response {
     }
 }
 
-#[derive(
-    Debug, Clone, OptionsBuilder, Serialize, Default, Eq, PartialEq, Ord, PartialOrd, Hash,
-)]
-#[non_exhaustive]
-pub struct Options {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub read_mode: Option<ReadMode>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub time_format: Option<Format>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub profile: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub durability: Option<Durability>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub group_format: Option<Format>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub noreply: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub db: Option<Db>,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Ord, PartialOrd, Hash)]
-#[non_exhaustive]
-#[serde(rename_all = "lowercase")]
-pub enum Format {
-    Native,
-    Raw,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct Db(pub Cow<'static, str>);
-
-pub(crate) const DEFAULT_DB: &str = "test";
-
-impl Options {
-    async fn default_db(self, session: &Session) -> Options {
-        let session_db = session.inner.db.lock().await;
-        if self.db.is_none() && *session_db != DEFAULT_DB {
-            return Self {
-                db: Some(Db(session_db.clone())),
-                ..self
-            };
-        }
-        self
-    }
-}
-
 #[async_trait]
 pub trait Arg {
-    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, Options)>;
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, RunOptions)>;
 }
 
 #[async_trait]
 impl Arg for &Session {
-    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, RunOptions)> {
         let conn = self.connection()?;
         Ok((conn, Default::default()))
     }
@@ -107,14 +58,14 @@ impl Arg for &Session {
 
 #[async_trait]
 impl Arg for Connection {
-    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, RunOptions)> {
         Ok((self, Default::default()))
     }
 }
 
 #[async_trait]
-impl Arg for Args<(&Session, Options)> {
-    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
+impl Arg for Args<(&Session, RunOptions)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, RunOptions)> {
         let Args((session, options)) = self;
         let conn = session.connection()?;
         Ok((conn, options))
@@ -122,8 +73,8 @@ impl Arg for Args<(&Session, Options)> {
 }
 
 #[async_trait]
-impl Arg for Args<(Connection, Options)> {
-    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, Options)> {
+impl Arg for Args<(Connection, RunOptions)> {
+    async fn into_run_opts(self, _for_changes: bool) -> Result<(Connection, RunOptions)> {
         let Args(arg) = self;
         Ok(arg)
     }
@@ -131,8 +82,22 @@ impl Arg for Args<(Connection, Options)> {
 
 #[async_trait]
 impl Arg for &mut Session {
-    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, Options)> {
+    async fn into_run_opts(self, for_changes: bool) -> Result<(Connection, RunOptions)> {
         self.connection()?.into_run_opts(for_changes).await
+    }
+}
+
+impl RunOptions {
+    async fn default_db(self, session: &Session) -> RunOptions {
+        let session_db = session.inner.db.lock().await;
+        const DEFAULT_DB: &str = "test";
+        if self.db.is_none() && *session_db != DEFAULT_DB {
+            return Self {
+                db: Some(Db(session_db.clone())),
+                ..self
+            };
+        }
+        self
     }
 }
 

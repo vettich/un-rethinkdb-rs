@@ -4,7 +4,7 @@ use serde::{Serialize, Serializer};
 use serde_with::skip_serializing_none;
 use unreql_macros::{OptionsBuilder, WithOpts};
 
-use crate::Command;
+use crate::{r, Command};
 
 use super::args;
 
@@ -30,6 +30,73 @@ pub enum ReadMode {
     Single,
     Majority,
     Outdated,
+}
+
+#[skip_serializing_none]
+#[derive(Debug, Clone, OptionsBuilder, Serialize, Default, PartialEq, PartialOrd)]
+#[non_exhaustive]
+pub struct RunOptions {
+    /// One of three possible values affecting the consistency guarantee for the query (default: `single`).
+    /// - `single` (the default) returns values that are in memory (but not necessarily written to disk) on the primary replica.
+    /// - `majority` will only return values that are safely committed on disk on a majority of replicas. This requires sending a message to every replica on each read, so it is the slowest but most consistent.
+    /// - `outdated` will return values that are in memory on an arbitrarily-selected replica. This is the fastest but least consistent.
+    pub read_mode: Option<ReadMode>,
+    /// What format to return times in (default: 'native'). Set this to 'raw' if you want times returned as JSON objects for exporting.
+    pub time_format: Option<Format>,
+    /// Whether or not to return a profile of the query’s execution (default: `false`).
+    pub profile: Option<bool>,
+    /// Possible values are `hard` and `soft`.
+    /// In soft durability mode RethinkDB will acknowledge the write immediately after receiving it, but before the write has been committed to disk.
+    pub durability: Option<Durability>,
+    /// What format to return grouped_data and grouped_streams in (default: `native`). Set this to `raw` if you want the raw pseudotype.
+    pub group_format: Option<Format>,
+    /// Set to `true` to not receive the result object or cursor and return immediately.
+    pub noreply: Option<bool>,
+    /// The database to run this query against as a string.
+    /// The default is the database specified in the db parameter to `connect` (which defaults to `test`).
+    /// The database may also be specified with the `db` command.
+    pub db: Option<Db>,
+    /// The maximum numbers of array elements that can be returned by a query (default: 100,000).
+    /// This affects all ReQL commands that return arrays.
+    /// Note that it has no effect on the size of arrays being written to the database;
+    /// those always have an upper limit of 100,000 elements.
+    pub array_limit: Option<i64>,
+    /// What format to return binary data in (default: `native`). Set this to `raw` if you want the raw pseudotype.
+    pub binary_format: Option<Format>,
+    /// Minimum number of rows to wait for before batching a result set (default: `8`). This is an integer.
+    pub min_batch_rows: Option<i64>,
+    /// Maximum number of rows to wait for before batching a result set (default: `unlimited`). This is an integer.
+    pub max_batch_rows: Option<i64>,
+    /// Maximum number of bytes to wait for before batching a result set (default: `1MB`). This is an integer.
+    pub max_batch_bytes: Option<i64>,
+    /// Maximum number of seconds to wait before batching a result set (default: `0.5`). This is a float (not an integer) and may be specified to the microsecond.
+    pub max_batch_seconds: Option<f32>,
+    /// Factor to scale the other parameters down by on the first batch (default: `4`).
+    /// For example, with this set to 8 and `max_batch_rows` set to 80, on the first batch `max_batch_rows` will be adjusted to 10 (80 / 8).
+    /// This allows the first batch to return faster.
+    pub firt_batch_scaledown_factor: Option<i64>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[non_exhaustive]
+#[serde(rename_all = "lowercase")]
+pub enum Format {
+    Native,
+    Raw,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Db(pub Cow<'static, str>);
+
+impl Serialize for Db {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let Self(name) = self;
+        let cmd = r.db(name.clone());
+        cmd.serialize(serializer)
+    }
 }
 
 #[skip_serializing_none]

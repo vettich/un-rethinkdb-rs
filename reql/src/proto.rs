@@ -1,5 +1,5 @@
-use crate::cmd::run::{Db, Options};
-use crate::{err, r, Func};
+use crate::cmd::options::RunOptions;
+use crate::{err, Func};
 use ql2::query::QueryType;
 use ql2::term::TermType;
 use serde::ser::{self, Serialize, Serializer};
@@ -8,8 +8,9 @@ use std::any::{Any, TypeId};
 use std::collections::{HashMap, VecDeque};
 use std::{fmt, str};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum Datum {
+    #[default]
     Null,
     Bool(bool),
     Number(Number),
@@ -31,12 +32,6 @@ impl Datum {
             Datum::Object(obj) => obj.iter().any(|(_, datum)| datum.has_implicit_var_arg()),
             _ => false,
         }
-    }
-}
-
-impl Default for Datum {
-    fn default() -> Self {
-        Self::Null
     }
 }
 
@@ -369,7 +364,7 @@ impl Serialize for Command {
 pub(crate) struct Payload<'a>(
     pub(crate) QueryType,
     pub(crate) Option<&'a Command>,
-    pub(crate) Options,
+    pub(crate) RunOptions,
 );
 
 impl Serialize for Payload<'_> {
@@ -403,16 +398,5 @@ impl fmt::Display for Payload<'_> {
         }
         // otherwise just print the debug form
         write!(f, "{:?}", self)
-    }
-}
-
-impl Serialize for Db {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let Self(name) = self;
-        let cmd = r.db(name.clone());
-        cmd.serialize(serializer)
     }
 }

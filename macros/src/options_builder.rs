@@ -1,6 +1,9 @@
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, Data, DeriveInput, Fields, GenericArgument, PathArguments, Type};
+use syn::{
+    parse_macro_input, Attribute, Data, DeriveInput, Fields, GenericArgument, Lit, Meta,
+    PathArguments, Type,
+};
 
 pub(super) fn parse(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -34,7 +37,17 @@ pub(super) fn parse(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
                     let ty = param.ty;
 
+                    let doc_comments = extract_doc_comments(&field.attrs);
+                    let method_docs = if doc_comments.is_empty() {
+                        quote! {}
+                    } else {
+                        quote! {
+                            #(#doc_comments)*
+                        }
+                    };
+
                     methods.extend(quote! {
+                        #method_docs
                         pub fn #name #generics(mut self, #name: #ty) -> Self #where_clause {
                             self.#name = #value;
                             self
@@ -96,4 +109,23 @@ fn param(typ: &Type) -> Param {
         }
     }
     unimplemented!()
+}
+
+fn extract_doc_comments(attrs: &[Attribute]) -> Vec<TokenStream> {
+    let mut docs = Vec::new();
+
+    for attr in attrs {
+        if attr.path.is_ident("doc") {
+            if let Ok(Meta::NameValue(meta)) = attr.parse_meta() {
+                if let Lit::Str(lit_str) = meta.lit {
+                    let doc_str = lit_str.value();
+                    docs.push(quote! {
+                        #[doc = #doc_str]
+                    });
+                }
+            }
+        }
+    }
+
+    docs
 }

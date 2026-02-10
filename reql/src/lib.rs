@@ -235,7 +235,7 @@ impl Session {
     ///
     /// ## Example
     ///
-    /// We have previously run queries with [noreply](cmd::run::Options::noreply())
+    /// We have previously run queries with [noreply](cmd::options::RunOptions::noreply())
     /// set to `true`. Now wait until the server has processed them.
     ///
     /// ```
